@@ -1,34 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "menu.h"
+#include "utiles.h"
+#include "errores.h"
 #include <stdbool.h>
 
-void imprime_manual_de_uso();
-
-int main( int argc, char *argv[] )
-{
-
-    
+/**
+ * @brief Punto de entrada del programa.
+ * 
+ * Se valida la cantidad de argumentos y se llama a la función muestra_menu()
+ * para iniciar la interacción con el usuario.
+ * 
+ * @param argc Número de argumentos pasados al programa.
+ * @param argv Lista de argumentos pasados al programa.
+ * 
+ * @return EXIT_SUCCESS si la ejecución es correcta, EXIT_FAILURE en caso de error.
+ */
+int main(int argc, char *argv[]) {
+    // Verificar la cantidad de argumentos pasados al programa
     bool se_paso_mas_de_un_argumento_al_programa = argc > 2;
     bool se_paso_un_solo_argumento_al_programa = argc == 2;
 
-    if (se_paso_mas_de_un_argumento_al_programa)
-    {
-        puts("numero de argumentos incorrecto");
+    if (se_paso_mas_de_un_argumento_al_programa) {
+        puts("Número de argumentos incorrecto");
         imprime_manual_de_uso();
-        return 1;
+        return ERR_NUM_ARGUMENTOS_INVALIDO;
     }
 
-    const char *NOMBRE_ARCHIVO_RECIBIDO_POR_ARGUMENTO = (se_paso_un_solo_argumento_al_programa) ? argv[1] : NULL;
-        
+    // Si se proporciona un argumento, se usa como nombre de archivo, de lo contrario es NULL
+    const char *nombre_archivo = se_paso_un_solo_argumento_al_programa ? argv[1] : NULL;
 
-    muestra_menu(NOMBRE_ARCHIVO_RECIBIDO_POR_ARGUMENTO);
-    
+    // Llamar a la función principal del menú
+    muestra_menu(nombre_archivo);
+
     return EXIT_SUCCESS;
 }
 
-void imprime_manual_de_uso() {
-    printf("Uso:\n"\
-           "\t./main <nombre_base_de_datos>\n"\
-           "(note que el nombre del archivo es opcional)\n");
-}

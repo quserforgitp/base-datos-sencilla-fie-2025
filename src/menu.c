@@ -1,134 +1,111 @@
 #include "menu.h"
+#include "errores.h"
+#include "archivo.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define NOMBRE_ARCHIVO_PREDETERMINADO "archivo.db"
 #define BUFF_SIZE 300
 
-bool existe_el_archivo(const char *nombre_archivo);
-bool crea_el_archivo(const char *nombre_archivo);
-bool no_se_pudo_abrir_archivo(FILE *archivo);
-void inicializa_el_archivo_de_ids(const char *nombre_archivo);
-
+/**
+ * @brief Muestra el menú de opciones y gestiona la interacción del usuario.
+ * 
+ * Si el usuario elige la opción 1, se agrega una nueva entrada a la base de datos.
+ * Se guarda el último ID en un archivo de índices para garantizar IDs únicos.
+ * 
+ * @param nombre_del_archivo Nombre del archivo de base de datos. Si es NULL, se usa el predeterminado.
+ */
 void muestra_menu(const char *nombre_del_archivo) {
 
-    // nombres de base de datos y archivo con el id
+    // Determinar el nombre del archivo de base de datos y su archivo de id's
     bool el_usuario_no_dio_nombre = nombre_del_archivo == NULL;
-
     const char *nombre_archivo_db = el_usuario_no_dio_nombre ?
-                                        NOMBRE_ARCHIVO_PREDETERMINADO : 
+                                        NOMBRE_PREDETERMINADO_ARCHIVO :
                                         nombre_del_archivo;
-
-    char nombre_archivo_idx_actual[100];
-
-    sprintf(nombre_archivo_idx_actual, "%s.inf", nombre_archivo_db);// el archivo id se llama igual pero con .inf al final
     
-    // apuntadores a archivos 
-    FILE *ptr_archivo_db;
-    FILE *ptr_archivo_idx_actual;
-    // buffer para capturar el texto que queremos mandar al archivo
+    // El archivo de id's tiene la misma base del nombre pero con extensión ".inf"
+    char nombre_archivo_ids[100];
+    sprintf(nombre_archivo_ids, "%s.inf", nombre_archivo_db);
+
+    // Punteros a los archivos
+    FILE *archivo_db;
+    FILE *archivo_ids;
+
+    // Buffer para capturar la entrada del usuario
     char nuevo_nombre[BUFF_SIZE + 1];
-    
-    // ciclo del menu para el usuario
+
+    // Variable para almacenar la opción seleccionada por el usuario
     int op = 0;
+
+    // Ciclo principal del menú
     do {
         printf("%s", MENU);
-        scanf("%d", &op); getchar(); // Consumir '\n'
-        
-        switch (op) 
+        scanf("%d", &op); getchar(); // Consumir '\n' para evitar problemas en fgets
+
+        switch (op)
         {
             case 1:
-                puts("============AGREGAR UNA ENTRADA===============");
+                puts("============ AGREGAR UNA ENTRADA ===============");
 
-                ptr_archivo_db = fopen(nombre_archivo_db, "a");               
-                // si no existe el del indice hay que crearlo y si ya existe hay que abrirlo en
-                // r+ y posicionarlo al principio con fseek(ptr_archivo_idx_actual, 0, SEEK_SET); 
-                if ( !existe_el_archivo(nombre_archivo_idx_actual) ) 
-                {
-                    crea_el_archivo(nombre_archivo_idx_actual);
-                    // falta agregar el 0 al principio del archivo como id inicial
-                    inicializa_el_archivo_de_ids(nombre_archivo_idx_actual);
+                // Abrir archivo de base de datos en modo "a" (append)
+                archivo_db = fopen(nombre_archivo_db, "a");
+
+                // Si el archivo de id's no existe, crearlo e inicializarlo con 0
+                if (!existe_el_archivo(nombre_archivo_ids)) {
+                    crea_el_archivo(nombre_archivo_ids);
+                    inicializa_el_archivo_de_ids(nombre_archivo_ids);
                 }
-                // ahora si, abrelo en r+ para poder leer y escribir en el sin borrar el contenido anterior
-                ptr_archivo_idx_actual = fopen(nombre_archivo_idx_actual, "r+");
 
-                if ( no_se_pudo_abrir_archivo(ptr_archivo_db) )
-                {
+                // Abrir el archivo de id's en modo "r+" (lectura y escritura sin borrar contenido)
+                archivo_ids = fopen(nombre_archivo_ids, "r+");
+
+                // Verificar que los archivos se abrieron correctamente
+                if (no_se_pudo_abrir_archivo(archivo_db)) {
                     printf("Error al abrir el archivo \"%s\"\n", nombre_archivo_db);
-                    exit(1);
-                }
-                
-                if ( no_se_pudo_abrir_archivo(ptr_archivo_idx_actual) )
-                {
-                    printf("Error al abrir el archivo \"%s\"\n", nombre_archivo_idx_actual);
-                    exit(1);
+                    exit(ERR_ARCHIVO_NO_ABIERTO);
                 }
 
-                printf("Introduzca un nombre para agregar a la base de datos -> "); 
-                
+                if (no_se_pudo_abrir_archivo(archivo_ids)) {
+                    printf("Error al abrir el archivo \"%s\"\n", nombre_archivo_ids);
+                    exit(ERR_ARCHIVO_NO_ABIERTO);
+                }
+
+                // Solicitar al usuario el nombre a agregar
+                printf("Introduzca un nombre para agregar a la base de datos -> ");
                 fgets(nuevo_nombre, sizeof(nuevo_nombre), stdin);
-                
-                // Removemos el salto de linea del fgets
+
+                // Eliminar el salto de línea que fgets agrega al final
                 nuevo_nombre[strcspn(nuevo_nombre, "\n")] = 0;
 
-                // Recuperar ID del archivo que guarda el ultimo
+                // Recuperar el último ID almacenado en el archivo de id's
                 char string_id[BUFF_SIZE + 1];
+                fgets(string_id, sizeof(string_id), archivo_ids);
 
-                fgets(string_id, sizeof(string_id), ptr_archivo_idx_actual);
-
+                // Convertir el ID de cadena a número
                 long indice_para_registro = atol(string_id);
 
-                fprintf(ptr_archivo_db, "%ld,%s\n", ++indice_para_registro,  nuevo_nombre);
-                fflush(ptr_archivo_db);
-                fclose(ptr_archivo_db);
-                
-                // actualizar el indice en el archivo de indices
-                fseek(ptr_archivo_idx_actual, 0, SEEK_SET);
-                fprintf(ptr_archivo_idx_actual, "%ld", indice_para_registro);
-                fclose(ptr_archivo_idx_actual);
+                // Escribir la nueva entrada en la base de datos con el ID actualizado
+                fprintf(archivo_db, "%ld,%s\n", ++indice_para_registro, nuevo_nombre);
+                fflush(archivo_db);
+                fclose(archivo_db);
+
+                // Actualizar el ID en el archivo de id's
+                fseek(archivo_ids, 0, SEEK_SET);
+                fprintf(archivo_ids, "%ld", indice_para_registro);
+                fclose(archivo_ids);
                 break;
+
             case 2:
                 puts("<NONE>");
                 break;
+
             case 3:
                 puts("Saliendo del programa...");
                 break;
+
             default:
                 printf("La opción '%d' no es válida.\n", op);
         }
     } while(op != 3);
-}
-
-
-bool existe_el_archivo(const char *nombre_archivo) {
-    return fopen(nombre_archivo, "r") != NULL;
-}
-bool crea_el_archivo(const char *nombre_archivo) {
-
-    if ( fopen(nombre_archivo, "a") == NULL )
-    {
-        printf("no pudo crearse el archivo \"%s\"\n", nombre_archivo);
-        return false;
-    } 
-    printf("se creo el archivo  \"%s\"\n", nombre_archivo);
-    return true;
-}
-
-bool no_se_pudo_abrir_archivo(FILE *archivo) {
-    return archivo == NULL;
-}
-
-void inicializa_el_archivo_de_ids(const char *nombre_archivo) {
-    // ya existe el archivo
-    // lo tengo que abrir en modo w
-    FILE *archivo_ids = fopen(nombre_archivo, "w");
-
-    if ( no_se_pudo_abrir_archivo(archivo_ids) ) {
-        printf("no se pudo abrir el archivo \"%s\"\n", nombre_archivo);
-        exit(1);
-    }
-    fprintf(archivo_ids, "%d", 0);
-    fclose(archivo_ids);
 }
 

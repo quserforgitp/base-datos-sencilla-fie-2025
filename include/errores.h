@@ -1,0 +1,8 @@
+#ifndef ERRORES_H
+#define ERRORES_H
+
+#define ERR_NUM_ARGUMENTOS_INVALIDO 1
+#define ERR_ARCHIVO_NO_ABIERTO 2
+
+#endif // ERRORES_H
+
