@@ -10,8 +10,9 @@
              "3. Salir             \n" \
              "=====================\n" \
              "Seleccione una opción -> "
+#define NOMBRE_PREDETERMINADO_ARCHIVO "nombres.db"
 
-void muestra_menu();
+void muestra_menu(const char *nombre_del_archivo);
 
 #endif // MENU_H
 
