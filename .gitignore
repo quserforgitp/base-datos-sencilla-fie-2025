@@ -4,3 +4,4 @@ bin/
 *.out
 *.swp
 *.db*
+.vscode
