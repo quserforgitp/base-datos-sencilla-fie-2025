@@ -4,5 +4,4 @@
 #define ERR_NUM_ARGUMENTOS_INVALIDO 1
 #define ERR_ARCHIVO_NO_ABIERTO 2
 
-#endif // ERRORES_H
-
+#endif   // ERRORES_H
