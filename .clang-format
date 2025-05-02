@@ -1,0 +1,33 @@
+BasedOnStyle: Google
+Language: Cpp
+
+# Alineación de punteros
+PointerAlignment: Left
+DerivePointerAlignment: false
+
+# Alineación de declaraciones y asignaciones
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+
+# Espacios y paréntesis
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceInEmptyParentheses: false
+
+# Llaves
+BreakBeforeBraces: Attach
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+
+# Otros ajustes
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Indentación de preprocesadores
+IndentPPDirectives: None
+
+# Mantener bloques como `char *argv[]`
+AllowAllParametersOfDeclarationOnNextLine: false
