@@ -199,3 +199,40 @@ char *capitaliza_palabra( const char cadena[] ) {
     resultado[ len ] = '\0';
     return resultado;
 }
+
+/**
+ * @brief Capitaliza cada palabra de un nombre completo.
+ *
+ * Convierte la primera letra de cada palabra a mayúscula y el resto a minúscula.
+ *
+ * @param cadena Cadena con el nombre completo.
+ * @return Nueva cadena capitalizada (debe ser liberada por el usuario).
+ */
+char *capitaliza_nombre_completo( const char cadena[] ) {
+    if ( cadena == NULL ) return NULL;
+
+    size_t len = strlen( cadena );
+    if ( len == 0 ) return strdup( "" );
+
+    char *resultado = malloc( len + 1 );
+    if ( resultado == NULL ) return NULL;
+
+    bool nueva_palabra = true;
+
+    for ( size_t i = 0; i < len; i++ ) {
+        if ( isspace( (unsigned char) cadena[ i ] ) ) {
+            resultado[ i ] = cadena[ i ];
+            nueva_palabra  = true;
+        } else {
+            if ( nueva_palabra ) {
+                resultado[ i ] = toupper( (unsigned char) cadena[ i ] );
+                nueva_palabra  = false;
+            } else {
+                resultado[ i ] = tolower( (unsigned char) cadena[ i ] );
+            }
+        }
+    }
+
+    resultado[ len ] = '\0';
+    return resultado;
+}

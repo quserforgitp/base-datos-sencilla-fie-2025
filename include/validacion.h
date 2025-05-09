@@ -84,4 +84,14 @@ char *capitaliza_palabra( const char cadena[] );
  */
 char *hace_minusculas_cadena( const char cadena[] );
 
+/**
+ * @brief Capitaliza cada palabra de un nombre completo.
+ *
+ * Convierte la primera letra de cada palabra a mayúscula y el resto a minúscula.
+ *
+ * @param cadena Cadena con el nombre completo.
+ * @return Nueva cadena capitalizada (debe ser liberada por el usuario).
+ */
+char *capitaliza_nombre_completo( const char cadena[] );
+
 #endif   // VALIDACION_H
