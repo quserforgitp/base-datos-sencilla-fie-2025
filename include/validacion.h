@@ -8,14 +8,11 @@
 #define VALIDACION_H
 
 #include <ctype.h>
-#include <locale.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
-#include <wctype.h>
 
 /**
  * @brief Verifica si una cadena representa un número entero válido.
@@ -72,26 +69,6 @@ int obtiene_indice_del_ultimo_caracter_no_blank( const char cadena[] );
  */
 void rellena_cadena_con_null_terminator( char cadena[] );
 
-/**
- * @brief Capitaliza una palabra en UTF-8 (primera letra en mayúscula).
- * @param cadena Palabra en `wchar_t`.
- * @return Nueva palabra capitalizada.
- */
-wchar_t *capitaliza_palabra_utf8( const wchar_t cadena[] );
-
-/**
- * @brief Capitaliza cada palabra de un nombre completo en UTF-8.
- * @param cadena Nombre completo en `wchar_t`.
- * @return Cadena capitalizada palabra por palabra.
- */
-wchar_t *capitaliza_nombre_completo_utf8( const wchar_t cadena[] );
-
-/**
- * @brief Convierte una cadena UTF-8 de caracteres anchos a minúsculas.
- * @param cadena Cadena original.
- * @return Nueva cadena en minúsculas.
- */
-wchar_t *hace_minusculas_cadena_utf8( const wchar_t cadena[] );
 
 /**
  * @brief Capitaliza una palabra (ASCII).
