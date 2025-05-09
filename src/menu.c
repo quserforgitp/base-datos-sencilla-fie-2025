@@ -7,6 +7,8 @@
 #include "archivo.h"
 #include "errores.h"
 #include "registro.h"
+#include "utiles.h"
+#include "validacion.h"
 
 #define BUFF_SIZE 300
 
@@ -34,16 +36,27 @@ void muestra_menu( const char *nombre_del_archivo ) {
     FILE *archivo_ids;
 
     // Buffer para capturar la entrada del usuario
-    char nuevo_nombre[ BUFF_SIZE + 1 ];
+    char *nuevo_nombre;
 
     // Variable para almacenar la opción seleccionada por el usuario
     int op = 0;
 
     // Ciclo principal del menú
     do {
-        printf( "%s", MENU );
-        scanf( "%d", &op );
-        getchar();   // Consumir '\n' para evitar problemas en fgets
+        // Solicita al usuario que escoja una opcion del menu
+        bool  no_es_un_numero = false;
+        char *entrada_para_op;
+        do {
+            if ( no_es_un_numero ) {
+                fprintf( stderr, "[!] -> '%s' no es un numero\n", entrada_para_op );
+            }
+            printf( "%s", MENU );
+            entrada_para_op = obtiene_entrada_por_teclado_sin_salto_linea( BUFF_SIZE );
+            no_es_un_numero = !es_un_numero( entrada_para_op );
+
+        } while ( no_es_un_numero );
+
+        op = convierte_a_numero( entrada_para_op );
 
         switch ( op ) {
             case 1:
@@ -74,18 +87,49 @@ void muestra_menu( const char *nombre_del_archivo ) {
                 }
 
                 // Solicitar al usuario el nombre a agregar
-                printf( "Introduzca un nombre para agregar a la base de datos -> " );
-                fgets( nuevo_nombre, sizeof( nuevo_nombre ), stdin );
-                // Eliminar el salto de línea que fgets agrega al final
-                nuevo_nombre[ strcspn( nuevo_nombre, "\n" ) ] = 0;
+                char *entrada_nuevo_nombre;
+                bool  el_nombre_no_es_valido = false;
+                do {
+                    if ( el_nombre_no_es_valido ) {
+                        fprintf(
+                            stderr,
+                            "[!] El nombre -> [%s] no cumple con el formato valido.\n",
+                            entrada_nuevo_nombre );
+                    }
+                    printf( "Introduzca un nombre para agregar a la base de datos -> " );
+
+                    entrada_nuevo_nombre = nuevo_nombre =
+                        obtiene_entrada_por_teclado_sin_salto_linea( BUFF_SIZE );
+                    nuevo_nombre = remueve_espacios_sobrantes_principio_y_final(
+                        entrada_nuevo_nombre );
+
+                    el_nombre_no_es_valido =
+                        !el_formato_de_nombre_es_valido( nuevo_nombre );
+
+                } while ( el_nombre_no_es_valido );
+                nuevo_nombre = capitaliza_nombre_completo( nuevo_nombre );
 
                 // Solicitar al usuario la matricula a agregar
-                char nueva_matricula[ BUFF_SIZE + 1 ];
-                printf( "Introduzca una matricula para agregar a la base de datos -> " );
-                fgets( nueva_matricula, BUFF_SIZE, stdin );
-                // Eliminar el salto de línea que fgets agrega al final
-                nueva_matricula[ strcspn( nueva_matricula, "\n" ) ] = 0;
+                char *entrada_matricula;
+                char *nueva_matricula;
+                bool  la_matricula_no_es_valida = false;
+                do {
+                    if ( la_matricula_no_es_valida ) {
+                        fprintf( stderr, "[!] La matricula -> [%s] es invalida.\n",
+                                 nueva_matricula );
+                    }
+                    printf(
+                        "Introduzca una matricula para agregar a la base de datos -> " );
 
+                    entrada_matricula =
+                        obtiene_entrada_por_teclado_sin_salto_linea( BUFF_SIZE );
+
+                    nueva_matricula =
+                        remueve_espacios_sobrantes_principio_y_final( entrada_matricula );
+                    la_matricula_no_es_valida =
+                        !el_formato_de_matricula_es_valido( nueva_matricula );
+
+                } while ( la_matricula_no_es_valida );
 
                 // Estrucutra nuevo registro
                 Registro nuevo_registro;
