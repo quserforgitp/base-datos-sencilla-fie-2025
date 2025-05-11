@@ -66,7 +66,7 @@ int main() {
     imprime_info_estructura_registros( rs );
 
     imprime_registros( rs, 1, HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
-    imprime_registros( rs, 1, UNA_SOLA_IMPRESION );
+    imprime_registros( rs, 2, UNA_SOLA_IMPRESION );
     imprime_registros( rs, 1, HASTA_QUE_TERMINE );
 
     fclose( archivo );
@@ -161,7 +161,7 @@ void limpia_buffer_de_entrada() {
 }
 
 char solicita_enter_o_n_para_continuar_o_salir() {
-    printf( "Presione Enter para continuar, o 'n' y luego Enter para salir: " );
+    printf( "---> Presione Enter para continuar, o 'n' y luego Enter para salir: " );
 
     char c = getchar();
 
@@ -196,7 +196,18 @@ void muestra_registros_hasta_que_el_usuario_decida_parar( Registros *rs ) {
             ( caracter_introducido != 'n' && caracter_introducido != 'N' );
 
         if ( ( i + 1 ) == numero_registros ) {
-            printf( "[!] Ya se han mostrado todos los registros...\n" );
+            printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
+            rs->ultimo_registro_mostrado = 0;
+
+            printf( ">>> [INPUT] Desea reiniciar la impresion y continuar imprimiendo?...\n" );
+            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
+
+            usuario_quiere_seguir =
+                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
+
+            if ( usuario_quiere_seguir ) {
+                i = inicio - 1;
+            }
         }
     }
 }
@@ -215,7 +226,8 @@ void muestra_registros_restantes( Registros *rs ) {
 
         rs->ultimo_registro_mostrado = i + 1;
         if ( ( i + 1 ) == numero_registros ) {
-            printf( "[!] Ya se han mostrado todos los registros...\n" );
+            printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
+            rs->ultimo_registro_mostrado = 0;
         }
     }
 }
@@ -230,14 +242,46 @@ void muestra_n_desde_el_actual( Registros *rs, int n ) {
     int       numero_registros = rs->numero_registros_actual;
     Registro *r_actual;
 
-    for ( int i = inicio; i < fin && i < numero_registros; i++ ) {
+    char caracter_introducido;
+    bool usuario_quiere_seguir               = true;
+    bool se_han_mostrado_todos_los_registros = false;
+
+
+    for ( int i = inicio; i < fin && usuario_quiere_seguir; i++ ) {
         r_actual = &( rs->registros[ i ] );
         imprime_registro( r_actual );
-        if ( ( i + 1 ) == numero_registros ) {
-            printf( "[!] Ya se han mostrado todos los registros...\n" );
+
+        if ( i + 1 == fin ) {   // tanda de impresion completada
+            printf( ">>> [INFO] Tanda de impresion completada!!!...\n" );
+            printf( ">>> [INPUT] Desea seguir imprimiendo?...\n" );
+            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
+            usuario_quiere_seguir =
+                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
+            if ( usuario_quiere_seguir ) {
+                fin += n;   // una tanda mas de impresion
+            }
+        }
+
+        if ( ( i + 1 ) == numero_registros ) {   // se imprimio el ultimo registro
+            printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
+            se_han_mostrado_todos_los_registros = true;
+            printf( ">>> [INPUT] Desea reiniciar la impresion?...\n" );
+            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
+
+            usuario_quiere_seguir =
+                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
+            rs->ultimo_registro_mostrado = 0;
+            if ( usuario_quiere_seguir ) {   // se reinicia la impresion
+                i                                   = -1;
+                fin                                 = n;
+                se_han_mostrado_todos_los_registros = false;
+            }
         }
     }
-    rs->ultimo_registro_mostrado = fin;
+
+    if ( !se_han_mostrado_todos_los_registros ) {
+        rs->ultimo_registro_mostrado = fin;
+    }
 }
 
 bool tiene_registros_disponibles( const Registros *rs ) {
@@ -268,7 +312,7 @@ bool comprueba_condiciones_para_mostrar_registros( const Registros *rs ) {
         no_paso_verificacion = !( c_actual->pasa_la_comprobacion( rs ) );
 
         if ( no_paso_verificacion ) {
-            printf( "[!] %s\n", c_actual->mensaje_condicion_incumplida );
+            printf( ">>> [INFO]  %s\n", c_actual->mensaje_condicion_incumplida );
             return false;
         }
     }
