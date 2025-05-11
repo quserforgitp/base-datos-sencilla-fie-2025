@@ -20,8 +20,14 @@ typedef struct {
 typedef enum {
     UNA_SOLA_IMPRESION,
     HASTA_QUE_TERMINE,
-    HASTA_QUE_EL_USUARIO_INDIQUE
+    HASTA_QUE_EL_USUARIO_DECIDA_PARAR
 } ModoImpresion;
+
+typedef struct {
+    bool ( *pasa_la_comprobacion )( const Registros *rs );
+    char *nombre_comprobacion;
+    char *mensaje_condicion_incumplida;
+} CondicionMostrarRegistros;
 
 
 void imprime_registros( Registros *rs, int numero_registros_a_imprimir,
@@ -32,7 +38,21 @@ void imprime_registro( Registro *r );
 Registros *carga_registros_de_db_en_memoria( FILE *archivo_db, int caracteres_por_linea,
                                              int capacidad_registros );
 
+void limpia_buffer_de_entrada();
+
 void imprime_info_estructura_registros( Registros *rs );
+
+char solicita_enter_o_n_para_continuar_o_salir();
+
+void muestra_registros_hasta_que_el_usuario_decida_parar( Registros *rs );
+
+void muestra_registros_restantes( Registros *rs );
+
+void muestra_n_desde_el_actual( Registros *rs, int n );
+
+bool tiene_registros_disponibles( const Registros *rs );
+
+bool comprueba_condiciones_para_mostrar_registros( const Registros *rs );
 
 int main() {
     FILE *archivo = fopen( "archivo.db", "r" );
@@ -45,8 +65,7 @@ int main() {
 
     imprime_info_estructura_registros( rs );
 
-    printf( "Llamando a impresión UNA_SOLA_IMPRESION con 1 registro...\n" );
-    imprime_registros( rs, 1, HASTA_QUE_EL_USUARIO_INDIQUE );
+    imprime_registros( rs, 1, HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
     imprime_registros( rs, 1, UNA_SOLA_IMPRESION );
     imprime_registros( rs, 1, HASTA_QUE_TERMINE );
 
@@ -57,44 +76,20 @@ void imprime_registros( Registros *rs, int numero_registros_a_imprimir,
     switch ( modo_impresion ) {
         case UNA_SOLA_IMPRESION:
             printf( "[DEBUG] Entrando en: UNA_SOLA_IMPRESION\n" );
-            int inicio = rs->ultimo_registro_mostrado;
-            int fin    = inicio + numero_registros_a_imprimir;
-            for ( int i = inicio; i < fin && i < rs->numero_registros_actual; i++ ) {
-                imprime_registro( &( rs->registros[ i ] ) );
-            }
-            rs->ultimo_registro_mostrado = fin;
+            muestra_n_desde_el_actual( rs, numero_registros_a_imprimir );
             break;
 
-        case HASTA_QUE_EL_USUARIO_INDIQUE: {
-            printf( "[DEBUG] Entrando en: HASTA_QUE_EL_USUARIO_INDIQUE\n" );
-            char c                     = '\n';
-            bool usuario_quiere_seguir = true;
-            for ( int i = rs->ultimo_registro_mostrado;
-                  i < rs->numero_registros_actual && usuario_quiere_seguir; i++ ) {
-                imprime_registro( &( rs->registros[ i ] ) );
-                rs->ultimo_registro_mostrado = i + 1;
+        case HASTA_QUE_EL_USUARIO_DECIDA_PARAR: {
+            printf( "[DEBUG] Entrando en: HASTA_QUE_EL_USUARIO_DECIDA_PARAR\n" );
 
-                printf(
-                    "Presione Enter para continuar, o 'n' y luego Enter para salir: " );
+            muestra_registros_hasta_que_el_usuario_decida_parar( rs );
 
-                c = getchar();
-                if ( c != '\n' ) {
-                    char aux;
-                    while ( ( aux = getchar() ) != '\n' &&
-                            aux != EOF );   // limpiar buffer
-                }
-                usuario_quiere_seguir = c != 'n' && c != 'N';
-            }
             break;
         }
 
         case HASTA_QUE_TERMINE:
             printf( "[DEBUG] Entrando en: HASTA_QUE_TERMINE\n" );
-            for ( int i = rs->ultimo_registro_mostrado; i < rs->numero_registros_actual;
-                  i++ ) {
-                imprime_registro( &( rs->registros[ i ] ) );
-                rs->ultimo_registro_mostrado = i + 1;
-            }
+            muestra_registros_restantes( rs );
             break;
 
         default:
@@ -158,4 +153,124 @@ Registros *carga_registros_de_db_en_memoria( FILE *archivo_db, int caracteres_po
     }
     rs->ultimo_registro_mostrado = 0;
     return rs;
+}
+
+void limpia_buffer_de_entrada() {
+    char aux;
+    while ( ( aux = getchar() ) != '\n' && aux != EOF );   // limpiar buffer
+}
+
+char solicita_enter_o_n_para_continuar_o_salir() {
+    printf( "Presione Enter para continuar, o 'n' y luego Enter para salir: " );
+
+    char c = getchar();
+
+    bool no_se_introdujo_solamente_enter;
+    no_se_introdujo_solamente_enter = c != '\n';
+
+    if ( no_se_introdujo_solamente_enter ) limpia_buffer_de_entrada();
+
+    return c;
+}
+
+void muestra_registros_hasta_que_el_usuario_decida_parar( Registros *rs ) {
+    bool no_se_pueden_mostrar_registros =
+        !comprueba_condiciones_para_mostrar_registros( rs );
+    if ( no_se_pueden_mostrar_registros ) return;
+
+    bool      usuario_quiere_seguir = true;
+    char      caracter_introducido;
+    Registro *r_actual;
+
+    int inicio           = rs->ultimo_registro_mostrado;
+    int numero_registros = rs->numero_registros_actual;
+
+    for ( int i = inicio; i < numero_registros && usuario_quiere_seguir; i++ ) {
+        r_actual = &( rs->registros[ i ] );
+
+        imprime_registro( r_actual );
+        rs->ultimo_registro_mostrado = i + 1;
+        caracter_introducido         = solicita_enter_o_n_para_continuar_o_salir();
+
+        usuario_quiere_seguir =
+            ( caracter_introducido != 'n' && caracter_introducido != 'N' );
+
+        if ( ( i + 1 ) == numero_registros ) {
+            printf( "[!] Ya se han mostrado todos los registros...\n" );
+        }
+    }
+}
+
+void muestra_registros_restantes( Registros *rs ) {
+    bool no_se_pueden_mostrar_registros =
+        !comprueba_condiciones_para_mostrar_registros( rs );
+    if ( no_se_pueden_mostrar_registros ) return;
+
+    int       numero_registros = rs->numero_registros_actual;
+    Registro *r_actual;
+    for ( int i = rs->ultimo_registro_mostrado; i < numero_registros; i++ ) {
+        r_actual = &( rs->registros[ i ] );
+
+        imprime_registro( r_actual );
+
+        rs->ultimo_registro_mostrado = i + 1;
+        if ( ( i + 1 ) == numero_registros ) {
+            printf( "[!] Ya se han mostrado todos los registros...\n" );
+        }
+    }
+}
+
+void muestra_n_desde_el_actual( Registros *rs, int n ) {
+    bool no_se_pueden_mostrar_registros =
+        !comprueba_condiciones_para_mostrar_registros( rs );
+    if ( no_se_pueden_mostrar_registros ) return;
+
+    int       inicio           = rs->ultimo_registro_mostrado;
+    int       fin              = inicio + n;
+    int       numero_registros = rs->numero_registros_actual;
+    Registro *r_actual;
+
+    for ( int i = inicio; i < fin && i < numero_registros; i++ ) {
+        r_actual = &( rs->registros[ i ] );
+        imprime_registro( r_actual );
+        if ( ( i + 1 ) == numero_registros ) {
+            printf( "[!] Ya se han mostrado todos los registros...\n" );
+        }
+    }
+    rs->ultimo_registro_mostrado = fin;
+}
+
+bool tiene_registros_disponibles( const Registros *rs ) {
+    return rs && ( rs->numero_registros_actual ) > 0;
+}
+
+bool no_se_ha_mostrado_el_ultimo_aun( const Registros *rs ) {
+    int ultimo_mostrado = rs->ultimo_registro_mostrado;
+    int ultimo_registro = rs->numero_registros_actual;
+
+    return rs && ( ultimo_mostrado != ultimo_registro );   // rs nulo -> false
+}
+
+bool comprueba_condiciones_para_mostrar_registros( const Registros *rs ) {
+    CondicionMostrarRegistros condiciones[] = {
+        { .pasa_la_comprobacion         = tiene_registros_disponibles,
+          .nombre_comprobacion          = "tiene_registros_disponibles",
+          .mensaje_condicion_incumplida = "No hay registros disponibles para mostrar." },
+        { .pasa_la_comprobacion         = no_se_ha_mostrado_el_ultimo_aun,
+          .nombre_comprobacion          = "no_se_ha_mostrado_el_ultimo_aun",
+          .mensaje_condicion_incumplida = "Ya se han mostrado todos los registros." } };
+
+    int numero_elementos = sizeof( condiciones ) / sizeof( condiciones[ 0 ] );
+    CondicionMostrarRegistros *c_actual;
+    bool                       no_paso_verificacion;
+    for ( int i = 0; i < numero_elementos; i++ ) {
+        c_actual             = &condiciones[ i ];
+        no_paso_verificacion = !( c_actual->pasa_la_comprobacion( rs ) );
+
+        if ( no_paso_verificacion ) {
+            printf( "[!] %s\n", c_actual->mensaje_condicion_incumplida );
+            return false;
+        }
+    }
+    return true;
 }
