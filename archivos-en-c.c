@@ -18,9 +18,9 @@ typedef struct {
 } Registros;
 
 typedef enum {
-    UNA_SOLA_IMPRESION,
-    HASTA_QUE_TERMINE,
-    HASTA_QUE_EL_USUARIO_DECIDA_PARAR
+    POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR,
+    DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL,
+    UNA_HASTA_QUE_EL_DECIDA_PARAR
 } ModoImpresion;
 
 typedef struct {
@@ -44,7 +44,7 @@ void imprime_info_estructura_registros( Registros *rs );
 
 char solicita_enter_o_n_para_continuar_o_salir();
 
-void muestra_registros_hasta_que_el_usuario_decida_parar( Registros *rs );
+void muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( Registros *rs );
 
 void muestra_registros_restantes( Registros *rs );
 
@@ -65,30 +65,30 @@ int main() {
 
     imprime_info_estructura_registros( rs );
 
-    imprime_registros( rs, 1, HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
-    imprime_registros( rs, 2, UNA_SOLA_IMPRESION );
-    imprime_registros( rs, 1, HASTA_QUE_TERMINE );
+    imprime_registros( rs, 1, UNA_HASTA_QUE_EL_DECIDA_PARAR );
+    imprime_registros( rs, 2, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
+    imprime_registros( rs, 1, DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL );
 
     fclose( archivo );
 }
 void imprime_registros( Registros *rs, int numero_registros_a_imprimir,
                         ModoImpresion modo_impresion ) {
     switch ( modo_impresion ) {
-        case UNA_SOLA_IMPRESION:
-            printf( "[DEBUG] Entrando en: UNA_SOLA_IMPRESION\n" );
+        case POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR:
+            printf( "[DEBUG] Entrando en: POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR\n" );
             muestra_n_desde_el_actual( rs, numero_registros_a_imprimir );
             break;
 
-        case HASTA_QUE_EL_USUARIO_DECIDA_PARAR: {
-            printf( "[DEBUG] Entrando en: HASTA_QUE_EL_USUARIO_DECIDA_PARAR\n" );
+        case UNA_HASTA_QUE_EL_DECIDA_PARAR: {
+            printf( "[DEBUG] Entrando en: UNA_HASTA_QUE_EL_DECIDA_PARAR\n" );
 
-            muestra_registros_hasta_que_el_usuario_decida_parar( rs );
+            muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( rs );
 
             break;
         }
 
-        case HASTA_QUE_TERMINE:
-            printf( "[DEBUG] Entrando en: HASTA_QUE_TERMINE\n" );
+        case DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL:
+            printf( "[DEBUG] Entrando en: DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL\n" );
             muestra_registros_restantes( rs );
             break;
 
@@ -173,7 +173,7 @@ char solicita_enter_o_n_para_continuar_o_salir() {
     return c;
 }
 
-void muestra_registros_hasta_que_el_usuario_decida_parar( Registros *rs ) {
+void muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( Registros *rs ) {
     bool no_se_pueden_mostrar_registros =
         !comprueba_condiciones_para_mostrar_registros( rs );
     if ( no_se_pueden_mostrar_registros ) return;
