@@ -65,7 +65,7 @@ int main() {
 
     imprime_info_estructura_registros( rs );
 
-    imprime_registros( rs, 3, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
+    imprime_registros( rs, 2, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
     imprime_registros( rs, 1, UNA_HASTA_QUE_EL_DECIDA_PARAR );
     imprime_registros( rs, 1, DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL );
 
@@ -191,10 +191,6 @@ void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs ) {
 
         imprime_registro( r_actual );
         rs->ultimo_registro_mostrado = i + 1;
-        caracter_introducido         = solicita_enter_o_n_para_continuar_o_salir();
-
-        usuario_quiere_seguir =
-            ( caracter_introducido != 'n' && caracter_introducido != 'N' );
 
         if ( ( i + 1 ) == numero_registros ) {
             printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
@@ -211,6 +207,11 @@ void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs ) {
             if ( usuario_quiere_seguir ) {
                 i = -1;
             }
+        } else {
+            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
+
+            usuario_quiere_seguir =
+                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
         }
     }
 }
@@ -270,17 +271,6 @@ void muestra_n_desde_el_actual( Registros *rs, int n ) {
         r_actual = &( rs->registros[ i ] );
         imprime_registro( r_actual );
 
-        if ( i + 1 == fin ) {   // tanda de impresion completada
-            printf( ">>> [INFO] Tanda de impresion completada!!!...\n" );
-            printf( ">>> [INPUT] Desea seguir imprimiendo?...\n" );
-            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
-            usuario_quiere_seguir =
-                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
-            if ( usuario_quiere_seguir ) {
-                fin += n;   // una tanda mas de impresion
-            }
-        }
-
         if ( ( i + 1 ) == numero_registros ) {   // se imprimio el ultimo registro
             printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
             se_han_mostrado_todos_los_registros = true;
@@ -297,7 +287,17 @@ void muestra_n_desde_el_actual( Registros *rs, int n ) {
 
                 se_han_mostrado_todos_los_registros = false;
             }
+        } else if ( i + 1 == fin ) {   // tanda de impresion completada
+            printf( ">>> [INFO] Tanda de impresion completada!!!...\n" );
+            printf( ">>> [INPUT] Desea seguir imprimiendo?...\n" );
+            caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
+            usuario_quiere_seguir =
+                ( caracter_introducido != 'n' && caracter_introducido != 'N' );
+            if ( usuario_quiere_seguir ) {
+                fin += n;   // una tanda mas de impresion
+            }
         }
+
     }
 
     if ( !se_han_mostrado_todos_los_registros ) {
