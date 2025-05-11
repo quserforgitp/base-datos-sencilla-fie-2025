@@ -65,7 +65,7 @@ int main() {
 
     imprime_info_estructura_registros( rs );
 
-    imprime_registros( rs, 2, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
+    imprime_registros( rs, 3, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
     imprime_registros( rs, 1, UNA_HASTA_QUE_EL_DECIDA_PARAR );
     imprime_registros( rs, 1, DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL );
 
@@ -240,9 +240,25 @@ void muestra_n_desde_el_actual( Registros *rs, int n ) {
         !comprueba_condiciones_para_mostrar_registros( rs );
     if ( no_se_pueden_mostrar_registros ) return;
 
-    int       inicio           = rs->ultimo_registro_mostrado;
-    int       fin              = inicio + n;
-    int       numero_registros = rs->numero_registros_actual;
+    int inicio           = rs->ultimo_registro_mostrado;
+    int numero_registros = rs->numero_registros_actual;
+
+    int fin = inicio + n;
+
+    bool n_excede_num_registros = ( inicio + n ) > numero_registros;
+    int  numero_tandas_ajustado;
+    if ( n_excede_num_registros ) {
+        printf(
+            ">>> [INFO] Se ajusto el numero de registros por tanda [%d] para mostrar "
+            "porque\n"
+            "           el numero recibido es mayor al numero de registros [%d]\n",
+            n, numero_registros );
+
+        numero_tandas_ajustado = ( numero_registros >= 100 ) ? 10 : numero_registros / 2;
+        fin                    = numero_tandas_ajustado;
+        printf( ">>> [INFO] Se imprimiran tandas de [%d]\n", numero_tandas_ajustado );
+    }
+
     Registro *r_actual;
 
     char caracter_introducido;
@@ -275,8 +291,10 @@ void muestra_n_desde_el_actual( Registros *rs, int n ) {
                 ( caracter_introducido != 'n' && caracter_introducido != 'N' );
             rs->ultimo_registro_mostrado = 0;
             if ( usuario_quiere_seguir ) {   // se reinicia la impresion
-                i                                   = -1;
-                fin                                 = n;
+                i = -1;
+
+                fin = n_excede_num_registros ? numero_tandas_ajustado : n;
+
                 se_han_mostrado_todos_los_registros = false;
             }
         }
