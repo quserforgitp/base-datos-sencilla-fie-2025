@@ -300,12 +300,10 @@ bool no_se_ha_mostrado_el_ultimo_aun( const Registros *rs ) {
 
 bool comprueba_condiciones_para_mostrar_registros( const Registros *rs ) {
     CondicionMostrarRegistros condiciones[] = {
-        { .pasa_la_comprobacion         = tiene_registros_disponibles,
-          .nombre_comprobacion          = "tiene_registros_disponibles",
-          .mensaje_condicion_incumplida = "No hay registros disponibles para mostrar." },
-        { .pasa_la_comprobacion         = no_se_ha_mostrado_el_ultimo_aun,
-          .nombre_comprobacion          = "no_se_ha_mostrado_el_ultimo_aun",
-          .mensaje_condicion_incumplida = "Ya se han mostrado todos los registros." } };
+        { .pasa_la_comprobacion = tiene_registros_disponibles,
+          .nombre_comprobacion  = "tiene_registros_disponibles",
+          .mensaje_condicion_incumplida =
+              "No hay registros disponibles para mostrar." } };
 
     int numero_elementos = sizeof( condiciones ) / sizeof( condiciones[ 0 ] );
     CondicionMostrarRegistros *c_actual;
