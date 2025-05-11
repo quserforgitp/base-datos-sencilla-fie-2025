@@ -44,7 +44,7 @@ void imprime_info_estructura_registros( Registros *rs );
 
 char solicita_enter_o_n_para_continuar_o_salir();
 
-void muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( Registros *rs );
+void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs );
 
 void muestra_registros_restantes( Registros *rs );
 
@@ -65,8 +65,8 @@ int main() {
 
     imprime_info_estructura_registros( rs );
 
-    imprime_registros( rs, 1, UNA_HASTA_QUE_EL_DECIDA_PARAR );
     imprime_registros( rs, 2, POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR );
+    imprime_registros( rs, 1, UNA_HASTA_QUE_EL_DECIDA_PARAR );
     imprime_registros( rs, 1, DESDE_DONDE_SE_QUEDO_HASTA_EL_FINAL );
 
     fclose( archivo );
@@ -82,7 +82,7 @@ void imprime_registros( Registros *rs, int numero_registros_a_imprimir,
         case UNA_HASTA_QUE_EL_DECIDA_PARAR: {
             printf( "[DEBUG] Entrando en: UNA_HASTA_QUE_EL_DECIDA_PARAR\n" );
 
-            muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( rs );
+            muestra_registros_hasta_que_usuario_decida_parar( rs );
 
             break;
         }
@@ -173,7 +173,7 @@ char solicita_enter_o_n_para_continuar_o_salir() {
     return c;
 }
 
-void muestra_registros_UNA_HASTA_QUE_EL_DECIDA_PARAR( Registros *rs ) {
+void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs ) {
     bool no_se_pueden_mostrar_registros =
         !comprueba_condiciones_para_mostrar_registros( rs );
     if ( no_se_pueden_mostrar_registros ) return;
