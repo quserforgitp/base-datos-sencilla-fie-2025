@@ -75,7 +75,8 @@ void imprime_registros( Registros *rs, int numero_registros_a_imprimir,
                         ModoImpresion modo_impresion ) {
     switch ( modo_impresion ) {
         case POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR:
-            printf( "[DEBUG] Entrando en: POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR\n" );
+            printf(
+                "[DEBUG] Entrando en: POR_TANDAS_HASTA_QUE_EL_USUARIO_DECIDA_PARAR\n" );
             muestra_n_desde_el_actual( rs, numero_registros_a_imprimir );
             break;
 
@@ -199,14 +200,16 @@ void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs ) {
             printf( ">>> [INFO]  Ya se han mostrado todos los registros...\n" );
             rs->ultimo_registro_mostrado = 0;
 
-            printf( ">>> [INPUT] Desea reiniciar la impresion y continuar imprimiendo?...\n" );
+            printf(
+                ">>> [INPUT] Desea reiniciar la impresion y continuar "
+                "imprimiendo?...\n" );
             caracter_introducido = solicita_enter_o_n_para_continuar_o_salir();
 
             usuario_quiere_seguir =
                 ( caracter_introducido != 'n' && caracter_introducido != 'N' );
 
             if ( usuario_quiere_seguir ) {
-                i = inicio - 1;
+                i = -1;
             }
         }
     }
