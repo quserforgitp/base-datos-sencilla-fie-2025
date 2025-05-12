@@ -93,3 +93,11 @@ void quita_salto_de_linea_de_cadena( char cadena[] ) {
     int indice_salto_linea       = strcspn( cadena, "\n" );
     cadena[ indice_salto_linea ] = '\0';
 }
+
+void limpia_pantalla() {
+#ifdef _WIN32
+    system( "cls" );
+#else
+    system( "clear" );
+#endif
+}

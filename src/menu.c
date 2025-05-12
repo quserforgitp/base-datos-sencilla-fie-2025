@@ -48,16 +48,17 @@ void muestra_menu( const char *nombre_del_archivo ) {
         char *entrada_para_op;
         do {
             if ( no_es_un_numero ) {
-                fprintf( stderr, "[!] -> '%s' no es un numero\n", entrada_para_op );
+                limpia_pantalla();
+                fprintf( stderr, ">>> [ADVERT] '%s' no es un numero\n", entrada_para_op );
             }
             printf( "%s", MENU );
             entrada_para_op = obtiene_entrada_por_teclado_sin_salto_linea( BUFF_SIZE );
             no_es_un_numero = !es_un_numero( entrada_para_op );
 
         } while ( no_es_un_numero );
+        limpia_pantalla();
 
         op = convierte_a_numero( entrada_para_op );
-
         switch ( op ) {
             case 1:
                 puts( "============ AGREGAR UNA ENTRADA ===============" );
@@ -91,10 +92,11 @@ void muestra_menu( const char *nombre_del_archivo ) {
                 bool  el_nombre_no_es_valido = false;
                 do {
                     if ( el_nombre_no_es_valido ) {
-                        fprintf(
-                            stderr,
-                            "[!] El nombre -> [%s] no cumple con el formato valido.\n",
-                            entrada_nuevo_nombre );
+                        limpia_pantalla();
+                        fprintf( stderr,
+                                 ">>> [ADVERT] El nombre -> [%s] no cumple con el "
+                                 "formato valido.\n",
+                                 entrada_nuevo_nombre );
                     }
                     printf( "Introduzca un nombre para agregar a la base de datos -> " );
 
@@ -107,6 +109,7 @@ void muestra_menu( const char *nombre_del_archivo ) {
                         !el_formato_de_nombre_es_valido( nuevo_nombre );
 
                 } while ( el_nombre_no_es_valido );
+                limpia_pantalla();
                 nuevo_nombre = capitaliza_nombre_completo( nuevo_nombre );
 
                 // Solicitar al usuario la matricula a agregar
@@ -115,7 +118,9 @@ void muestra_menu( const char *nombre_del_archivo ) {
                 bool  la_matricula_no_es_valida = false;
                 do {
                     if ( la_matricula_no_es_valida ) {
-                        fprintf( stderr, "[!] La matricula -> [%s] es invalida.\n",
+                        limpia_pantalla();
+                        fprintf( stderr,
+                                 ">>> [ADVERT] La matricula -> [%s] es invalida.\n",
                                  nueva_matricula );
                     }
                     printf(
@@ -130,6 +135,7 @@ void muestra_menu( const char *nombre_del_archivo ) {
                         !el_formato_de_matricula_es_valido( nueva_matricula );
 
                 } while ( la_matricula_no_es_valida );
+                limpia_pantalla();
 
                 // Estrucutra nuevo registro
                 Registro nuevo_registro;
@@ -148,22 +154,147 @@ void muestra_menu( const char *nombre_del_archivo ) {
                 // Convertir el ID de cadena a número
                 long indice_para_registro = atol( string_id );
                 // Asignar el id para el nuevo registro a la estructura del nuevo registro
-                nuevo_registro.id_alumno = ++indice_para_registro;
+                indice_para_registro++;
+                sprintf( string_id, "%ld", indice_para_registro );
+                strncpy( nuevo_registro.id_alumno, string_id, 100 );
+                // nuevo_registro.id_alumno = ++indice_para_registro;
 
                 // Escribir la nueva entrada en la base de datos con el ID actualizado
-                fprintf( archivo_db, "%ld,%s,%s\n", nuevo_registro.id_alumno,
+                fprintf( archivo_db, "%s,%s,%s\n", nuevo_registro.id_alumno,
                          nuevo_registro.nombre_alumno, nuevo_registro.matricula_alumno );
                 fflush( archivo_db );
                 fclose( archivo_db );
 
                 // Actualizar el ID en el archivo de id's
                 fseek( archivo_ids, 0, SEEK_SET );
-                fprintf( archivo_ids, "%ld", nuevo_registro.id_alumno );
+                fprintf( archivo_ids, "%s", nuevo_registro.id_alumno );
                 fclose( archivo_ids );
                 break;
 
             case 2:
-                puts( "<NONE>" );
+                puts( "============ MOSTRAR REGISTROS ===============" );
+                // Abrir archivo de base de datos en modo "r" (read)
+                archivo_db = fopen( nombre_archivo_db, "r" );
+
+                // Si el archivo de id's no existe, crearlo e inicializarlo con 0
+                if ( !existe_el_archivo( nombre_archivo_ids ) ) {
+                    crea_el_archivo( nombre_archivo_ids );
+                    inicializa_el_archivo_de_ids( nombre_archivo_ids );
+                }
+
+                // Abrir el archivo de id's en modo "r" (lectura)
+                archivo_ids = fopen( nombre_archivo_ids, "r" );
+
+                // Verificar que los archivos se abrieron correctamente
+                if ( no_se_pudo_abrir_archivo( archivo_db ) ) {
+                    printf( "Error al abrir el archivo \"%s\"\n", nombre_archivo_db );
+                    exit( ERR_ARCHIVO_NO_ABIERTO );
+                }
+
+                if ( no_se_pudo_abrir_archivo( archivo_ids ) ) {
+                    printf( "Error al abrir el archivo \"%s\"\n", nombre_archivo_ids );
+                    exit( ERR_ARCHIVO_NO_ABIERTO );
+                }
+
+                // cargar registros
+                Registros *rs;
+                rs = carga_registros_de_db_en_memoria( archivo_db, 100, 1000 );
+
+                //  mecanismo para elegir opciones de impresion
+                int opcion_impresion;
+                do {
+                    bool  no_es_numero = false;
+                    char *entrada_para_opcion_impresion;
+                    do {
+                        if ( no_es_numero ) {
+                            limpia_pantalla();
+                            fprintf( stderr, ">>> [ADVERT] '%s' no es un numero\n",
+                                     entrada_para_opcion_impresion );
+                        }
+
+                        printf(
+                            "========== SELECCIONE UNA OPCION ==========\n"
+                            "| 1.- Mostrar por tandas                  |\n"
+                            "| 2.- Uno en uno hasta detenerlo          |\n"
+                            "| 3.- Desde ultimo impreso hasta el final |\n"
+                            "| 4.- Regesar al menu principal           |\n"
+                            "===========================================\n"
+                            "Seleccione una opcion -> " );
+                        entrada_para_opcion_impresion =
+                            obtiene_entrada_por_teclado_sin_salto_linea( BUFF_SIZE );
+
+                        no_es_numero = !es_un_numero( entrada_para_opcion_impresion );
+
+                    } while ( no_es_numero );
+                    opcion_impresion =
+                        convierte_a_numero( entrada_para_opcion_impresion );
+                    limpia_pantalla();
+
+                    printf( "Opcion elegida -> %d\n", opcion_impresion );
+                    switch ( opcion_impresion ) {
+                        case 1:
+                            puts( "============ MOSTRANDO POR TANDAS ===============" );
+                            bool  no_es_numero = false;
+                            char *entrada_num_registros_por_tanda;
+                            int   num_registros_por_tanda;
+                            do {
+                                if ( no_es_numero ) {
+                                    limpia_pantalla();
+                                    fprintf( stderr,
+                                             ">>> [ADVERT] '%s' no es un numero\n",
+                                             entrada_num_registros_por_tanda );
+                                }
+
+                                printf(
+                                    "Cuantos registros quiere ver por impresion? -> " );
+                                entrada_num_registros_por_tanda =
+                                    obtiene_entrada_por_teclado_sin_salto_linea(
+                                        BUFF_SIZE );
+
+                                no_es_numero =
+                                    !es_un_numero( entrada_num_registros_por_tanda );
+
+                            } while ( no_es_numero );
+                            limpia_pantalla();
+                            num_registros_por_tanda =
+                                convierte_a_numero( entrada_num_registros_por_tanda );
+                            muestra_n_desde_el_actual( rs, num_registros_por_tanda );
+
+                            // invocar funcion para mostrarlos por tandas
+                            break;
+                        case 2:
+                            puts(
+                                "============ MOSTRANDO UNO POR UNO HASTA DETENER "
+                                "IMPRESION "
+                                "===============" );
+
+                            muestra_registros_hasta_que_usuario_decida_parar( rs );
+                            break;
+                        case 3:
+                            puts(
+                                "============ MOSTRANDO DESDE ULTIMO IMPRESO HASTA EL "
+                                "FINAL"
+                                "===============" );
+                            muestra_registros_restantes( rs );
+                            break;
+                        case 4:
+                            limpia_pantalla();
+                            puts( ">>> [INFO] Volviendo al menu principal..." );
+                            break;
+
+                        default:
+                            limpia_pantalla();
+                            printf(
+                                ">>> [ADVERT] La opción de impresion '%d' no es "
+                                "válida.\n",
+                                opcion_impresion );
+                            break;
+                    }
+                } while ( opcion_impresion != 4 );
+
+                // cerrar archivos
+                fclose( archivo_db );
+                fclose( archivo_ids );
                 break;
 
             case 3:
@@ -171,7 +302,8 @@ void muestra_menu( const char *nombre_del_archivo ) {
                 break;
 
             default:
-                printf( "La opción '%d' no es válida.\n", op );
+                limpia_pantalla();
+                printf( ">>> [ADVERT] La opción '%d' no es válida.\n", op );
         }
     } while ( op != 3 );
 }
