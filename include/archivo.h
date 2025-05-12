@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "registro.h"
+
 #define NOMBRE_PREDETERMINADO_ARCHIVO "nombres.db"
 
 /**
@@ -38,5 +40,26 @@ bool no_se_pudo_abrir_archivo( FILE *archivo );
  * @param nombre_archivo Nombre del archivo donde se guardarán los IDs.
  */
 void inicializa_el_archivo_de_ids( const char *nombre_archivo );
+
+void imprime_registro( Registro *r );
+
+Registros *carga_registros_de_db_en_memoria( FILE *archivo_db, int caracteres_por_linea,
+                                             int capacidad_registros );
+
+void limpia_buffer_de_entrada();
+
+void imprime_info_estructura_registros( Registros *rs );
+
+char solicita_enter_o_n_para_continuar_o_salir();
+
+void muestra_registros_hasta_que_usuario_decida_parar( Registros *rs );
+
+void muestra_registros_restantes( Registros *rs );
+
+void muestra_n_desde_el_actual( Registros *rs, int n );
+
+bool tiene_registros_disponibles( const Registros *rs );
+
+bool comprueba_condiciones_para_mostrar_registros( const Registros *rs );
 
 #endif   // ARCHIVO_H

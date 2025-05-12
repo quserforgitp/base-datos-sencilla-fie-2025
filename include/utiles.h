@@ -1,8 +1,8 @@
 #ifndef UTILES_H
 #define UTILES_H
 
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,5 +64,7 @@ bool existe_salto_de_linea_en_cadena( char cadena[] );
  * @param cadena Cadena de texto a modificar.
  */
 void quita_salto_de_linea_de_cadena( char cadena[] );
+
+void limpia_pantalla();
 
 #endif   // UTILES_H
